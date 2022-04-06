@@ -16,8 +16,6 @@ const DownloadScreen = () => {
     state => state.download,
   );
 
-  console.log(downloadedSelector);
-
   const onGetDownloadedPhotos = useCallback(
     (): Content[] =>
       downloadedSelector.photos

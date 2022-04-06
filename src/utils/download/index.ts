@@ -1,8 +1,6 @@
 import RNFetchBlob from 'rn-fetch-blob';
 
 import {Content, Photo} from '@models';
-import {dispatch} from '@utils';
-import {setDownloadedPhotoStatus, setDownloadPhotoProgress} from '@store';
 
 export const canBeDragged = (data: Content[]): boolean => {
   let drag = true;
@@ -26,7 +24,11 @@ export const fetchPhoto = (photo: Photo) =>
     addAndroidDownloads: {
       useDownloadManager: true,
       notification: true,
+      title: 'Download Complete',
+      description: 'file description',
+      mediaScannable: true,
       path: RNFetchBlob.fs.dirs.PictureDir + '/image_' + photo.id + '.jpg',
-      description: 'Image',
     },
-  }).fetch('GET', photo.downloadUrl);
+  }).fetch('GET', photo.downloadUrl, {
+    'Cache-Control': 'no-store',
+  });

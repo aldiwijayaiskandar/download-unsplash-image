@@ -72,6 +72,8 @@ export const DownloadCard = ({drag, isActive, data}: DownloadCardProps) => {
           <Text style={{position: 'absolute', fontSize: 12, color: color.text}}>
             {downloadDetail?.status === 'downloaded'
               ? 'Downloaded'
+              : downloadDetail?.status === 'pending'
+              ? 'Pending'
               : `${data?.progress ?? 0}%`}
           </Text>
         </View>

@@ -25,7 +25,13 @@ export const RootNavigationContainer = () => {
               fontSize: 16,
             },
             headerRight: () => (
-              <Pressable onPress={() => navigationRef.navigate('Download')}>
+              <Pressable
+                onPress={() => navigationRef.navigate('Download')}
+                style={{
+                  height: 50,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
                 <Text style={{color: color.text, fontSize: 12}}>
                   To Download Page
                 </Text>

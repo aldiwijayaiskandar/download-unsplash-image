@@ -15,43 +15,48 @@ import {PhotoCard} from '@components';
 import {dispatch} from '@utils';
 
 const HomeScreen = () => {
-  const downloadingPhoto = useSelector<RootState, Photo[]>(state =>
-    state.download.photos.filter(photo => photo?.status === 'pending'),
+  const pendingPhotos = useSelector<RootState, Photo[]>(state =>
+    state.download.photos.filter(
+      photo => photo?.status === 'pending' || photo?.status === 'downloading',
+    ),
+  );
+
+  const downloadingPhotos = useSelector<RootState, Photo[]>(state =>
+    state.download.photos.filter(photo => photo?.status === 'downloading'),
   );
 
   const [photos, setPhotos] = useState<Photo[]>([]);
 
   // Detect all Pending picture Queue and run the task
   useEffect(() => {
-    for (
-      let i = 0;
-      i < (downloadingPhoto.length > 3 ? 3 : downloadingPhoto.length);
-      i++
-    ) {
-      if (downloadingPhoto[i] && downloadingPhoto[i].progress === 0) {
-        if (downloadingPhoto[i].task) {
-          downloadingPhoto[i]
-            .task()
-            .progress((received: number, total: number) => {
-              dispatch(
-                setDownloadPhotoProgress({
-                  id: downloadingPhoto[i].id,
-                  progress: (received / total) * 100,
-                }),
-              );
-            })
-            .then(() => {
-              dispatch(
-                setDownloadedPhotoStatus({
-                  id: downloadingPhoto[i].id,
-                  status: 'downloaded',
-                }),
-              );
-            });
+    if (downloadingPhotos.length < 3) {
+      for (let i = 0; i < 3 - downloadingPhotos.length; i++) {
+        if (pendingPhotos[i]) {
+          if (pendingPhotos[i].task) {
+            pendingPhotos[i]
+              .task()
+              .progress({interval: 100}, (received: number, total: number) => {
+                console.log('PROGRESS');
+                dispatch(
+                  setDownloadPhotoProgress({
+                    id: pendingPhotos[i].id,
+                    progress: (received / total) * 100,
+                  }),
+                );
+              })
+              .then(() => {
+                dispatch(
+                  setDownloadedPhotoStatus({
+                    id: pendingPhotos[i].id,
+                    status: 'downloaded',
+                  }),
+                );
+              });
+          }
         }
       }
     }
-  }, [downloadingPhoto.length]);
+  }, [pendingPhotos.length]);
 
   const onRefresh = async () => {
     try {

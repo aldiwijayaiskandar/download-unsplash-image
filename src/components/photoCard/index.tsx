@@ -16,15 +16,7 @@ export const PhotoCard = ({data}: PhotoCardProps) => {
   return (
     <Pressable
       onPress={() => {
-        let task = () => {
-          dispatch(
-            setDownloadedPhotoStatus({
-              id: data.id,
-              status: 'downloading',
-            }),
-          );
-          return fetchPhoto(data);
-        };
+        let task = () => fetchPhoto(data);
 
         dispatch(
           addDownloadedPhoto({

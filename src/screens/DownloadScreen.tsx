@@ -10,6 +10,7 @@ import {color} from '@common';
 import {DownloadState, RootState} from '@store';
 import {Content} from '@models';
 import {DownloadCard} from '@components';
+import {canBeDragged, setRedownloadImage} from '@utils';
 
 const DownloadScreen = () => {
   const downloadedSelector = useSelector<RootState, DownloadState>(
@@ -68,12 +69,7 @@ const DownloadScreen = () => {
     ...onGetDownloadingPhotos(),
   ]);
 
-  const renderItem = ({
-    item,
-    drag,
-    isActive,
-    index,
-  }: RenderItemParams<Content>) =>
+  const renderItem = ({item, drag, isActive}: RenderItemParams<Content>) =>
     item.type === 'text' ? (
       <Text
         key={`${item.text}`}
@@ -98,7 +94,12 @@ const DownloadScreen = () => {
       <FlatList
         keyExtractor={item => `${item.data?.id}`}
         data={data}
-        onDragEnd={({data}) => setData(data)}
+        onDragEnd={({data}) => {
+          if (canBeDragged(data)) {
+            setData(data);
+            setRedownloadImage(data);
+          }
+        }}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />

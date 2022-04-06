@@ -16,9 +16,7 @@ import {dispatch} from '@utils';
 
 const HomeScreen = () => {
   const pendingPhotos = useSelector<RootState, Photo[]>(state =>
-    state.download.photos.filter(
-      photo => photo?.status === 'pending' || photo?.status === 'downloading',
-    ),
+    state.download.photos.filter(photo => photo?.status === 'pending'),
   );
 
   const downloadingPhotos = useSelector<RootState, Photo[]>(state =>
@@ -27,16 +25,24 @@ const HomeScreen = () => {
 
   const [photos, setPhotos] = useState<Photo[]>([]);
 
-  // Detect all Pending picture Queue and run the task
-  useEffect(() => {
+  /* 
+    Detect all Pending picture Queue and run the task
+    and run 
+  */
+  const onManageQueue = async () => {
     if (downloadingPhotos.length < 3) {
       for (let i = 0; i < 3 - downloadingPhotos.length; i++) {
+        dispatch(
+          setDownloadedPhotoStatus({
+            id: pendingPhotos[i].id,
+            status: 'downloading',
+          }),
+        );
         if (pendingPhotos[i]) {
           if (pendingPhotos[i].task) {
             pendingPhotos[i]
               .task()
               .progress({interval: 100}, (received: number, total: number) => {
-                console.log('PROGRESS');
                 dispatch(
                   setDownloadPhotoProgress({
                     id: pendingPhotos[i].id,
@@ -56,7 +62,12 @@ const HomeScreen = () => {
         }
       }
     }
-  }, [pendingPhotos.length]);
+  };
+
+  // if pending or downloading photos change then call manage Queue
+  useEffect(() => {
+    onManageQueue();
+  }, [downloadingPhotos, pendingPhotos]);
 
   const onRefresh = async () => {
     try {

@@ -1,4 +1,5 @@
 import React from 'react';
+import {LogBox} from 'react-native';
 import {Provider} from 'react-redux';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {PersistGate} from 'redux-persist/integration/react';
@@ -13,6 +14,7 @@ if (__DEV__)
   import('./config/dev/reactotron').then(() =>
     console.log('Reactotron configured'),
   );
+LogBox.ignoreAllLogs();
 
 const App = () => {
   return (

@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Image, Text, View, TouchableOpacity} from 'react-native';
+import {Text, View} from 'react-native';
 import FlatList, {
   RenderItemParams,
   ScaleDecorator,
@@ -7,10 +7,15 @@ import FlatList, {
 import {useSelector} from 'react-redux';
 
 import {color} from '@common';
-import {DownloadState, RootState} from '@store';
+import {DownloadState, RootState, setPhotoArrangement} from '@store';
 import {Content} from '@models';
 import {DownloadCard} from '@components';
-import {canBeDragged, setRedownloadImage} from '@utils';
+import {
+  canBeDragged,
+  dispatch,
+  setDownloadImageToPending,
+  setRedownloadImage,
+} from '@utils';
 
 const DownloadScreen = () => {
   const downloadedSelector = useSelector<RootState, DownloadState>(
@@ -42,6 +47,7 @@ const DownloadScreen = () => {
   );
 
   useEffect(() => {
+    /* Setting the data to content */
     setData([
       {
         type: 'text',
@@ -56,21 +62,11 @@ const DownloadScreen = () => {
     ]);
   }, [downloadedSelector.photos]);
 
-  const [data, setData] = useState<Content[]>([
-    {
-      type: 'text',
-      text: 'Downloaded',
-    },
-    ...onGetDownloadedPhotos(),
-    {
-      type: 'text',
-      text: 'Downloading',
-    },
-    ...onGetDownloadingPhotos(),
-  ]);
+  const [data, setData] = useState<Content[]>([]);
 
   const renderItem = ({item, drag, isActive}: RenderItemParams<Content>) =>
     item.type === 'text' ? (
+      // the text is not putted inside a ScaleDecorator and not calling drag to make it unDraggabe
       <Text
         key={`${item.text}`}
         style={{
@@ -95,8 +91,20 @@ const DownloadScreen = () => {
         keyExtractor={item => `${item.data?.id}`}
         data={data}
         onDragEnd={({data}) => {
+          /* 
+              Checking if the card can be dragged 
+              Note:
+              - if card can be dragged then arrange photos in redux ( it will automatically change the state above)
+              - then check if the dragged card is change to pending
+              - then check if the dragged card is redownloading needed
+          */
           if (canBeDragged(data)) {
-            setData(data);
+            dispatch(
+              setPhotoArrangement(
+                data.filter(x => x.type === 'photo').map(item => item.data),
+              ),
+            );
+            setDownloadImageToPending(data);
             setRedownloadImage(data);
           }
         }}

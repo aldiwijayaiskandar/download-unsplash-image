@@ -40,6 +40,12 @@ const downloadSlice = createSlice({
         progress: payload.progress,
       };
     },
+    setPhotoArrangement: (
+      state: DownloadState,
+      {payload}: PayloadAction<any[]>,
+    ) => {
+      state.photos = payload;
+    },
   },
 });
 
@@ -48,4 +54,5 @@ export const {
   addDownloadedPhoto,
   setDownloadedPhotoStatus,
   setDownloadPhotoProgress,
+  setPhotoArrangement,
 } = downloadSlice.actions;

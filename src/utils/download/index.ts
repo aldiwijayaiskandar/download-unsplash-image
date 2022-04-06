@@ -31,7 +31,30 @@ export const setRedownloadImage = (data: Content[]): void => {
       data[i].type === 'photo' &&
       data[i].data?.status === 'downloaded'
     ) {
-      deletePhoto(data[i].data);
+      // deletePhoto(data[i].data);
+      dispatch(
+        setDownloadedPhotoStatus({
+          id: data[i]?.data?.id ?? '',
+          status: 'pending',
+        }),
+      );
+      break;
+    }
+  }
+};
+
+export const setDownloadImageToPending = (data: Content[]): void => {
+  const downloadingTextIndex = data.findIndex(
+    x => x.type === 'text' && x.text === 'Downloading',
+  );
+
+  for (let i = downloadingTextIndex + 3; i < data.length; i++) {
+    if (
+      data[i].data &&
+      data[i].type === 'photo' &&
+      data[i].data?.status === 'downloading'
+    ) {
+      // data[i]?.data?.task.cancel();
       dispatch(
         setDownloadedPhotoStatus({
           id: data[i]?.data?.id ?? '',

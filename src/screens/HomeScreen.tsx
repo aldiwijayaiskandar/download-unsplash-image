@@ -5,9 +5,14 @@ import {useSelector} from 'react-redux';
 import {color} from '@common';
 import {Photo} from '@models';
 import {getPhotos} from '@services';
-import {RootState} from '@store';
+import {
+  RootState,
+  setDownloadedPhotoStatus,
+  setDownloadPhotoProgress,
+} from '@store';
 
 import {PhotoCard} from '@components';
+import {dispatch} from '@utils';
 
 const HomeScreen = () => {
   const downloadingPhoto = useSelector<RootState, Photo[]>(state =>
@@ -16,6 +21,7 @@ const HomeScreen = () => {
 
   const [photos, setPhotos] = useState<Photo[]>([]);
 
+  // Detect all Pending picture Queue and run the task
   useEffect(() => {
     for (
       let i = 0;
@@ -24,7 +30,24 @@ const HomeScreen = () => {
     ) {
       if (downloadingPhoto[i] && downloadingPhoto[i].progress === 0) {
         if (downloadingPhoto[i].task) {
-          downloadingPhoto[i].task();
+          downloadingPhoto[i]
+            .task()
+            .progress((received: number, total: number) => {
+              dispatch(
+                setDownloadPhotoProgress({
+                  id: downloadingPhoto[i].id,
+                  progress: (received / total) * 100,
+                }),
+              );
+            })
+            .then(() => {
+              dispatch(
+                setDownloadedPhotoStatus({
+                  id: downloadingPhoto[i].id,
+                  status: 'downloaded',
+                }),
+              );
+            });
         }
       }
     }

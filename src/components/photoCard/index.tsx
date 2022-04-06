@@ -1,15 +1,10 @@
 import React from 'react';
 import {Image, Pressable} from 'react-native';
-import RNFetchBlob from 'rn-fetch-blob';
 
 import {Photo} from '@models';
 import {screenWidthScale} from '@common';
-import {dispatch} from '@utils';
-import {
-  addDownloadedPhoto,
-  setDownloadedPhotoStatus,
-  setDownloadPhotoProgress,
-} from '@store';
+import {dispatch, fetchPhoto} from '@utils';
+import {addDownloadedPhoto, setDownloadedPhotoStatus} from '@store';
 
 type PhotoCardProps = {
   data: Photo;
@@ -21,7 +16,6 @@ export const PhotoCard = ({data}: PhotoCardProps) => {
   return (
     <Pressable
       onPress={() => {
-        let dirs = RNFetchBlob.fs.dirs;
         let task = () => {
           dispatch(
             setDownloadedPhotoStatus({
@@ -29,34 +23,7 @@ export const PhotoCard = ({data}: PhotoCardProps) => {
               status: 'downloading',
             }),
           );
-          return RNFetchBlob.config({
-            // response data will be saved to this path if it has access right.
-            fileCache: true,
-            addAndroidDownloads: {
-              useDownloadManager: true,
-              notification: true,
-              path: dirs.PictureDir + '/image_' + data.id + '.jpg',
-              description: 'Image',
-            },
-          })
-            .fetch('GET', data.downloadUrl)
-            .progress((received, total) => {
-              dispatch(
-                setDownloadPhotoProgress({
-                  id: data.id,
-                  progress: (received / total) * 100,
-                }),
-              );
-            })
-            .then(() => {
-              console.log('Done');
-              dispatch(
-                setDownloadedPhotoStatus({
-                  id: data.id,
-                  status: 'downloaded',
-                }),
-              );
-            });
+          return fetchPhoto(data);
         };
 
         dispatch(
